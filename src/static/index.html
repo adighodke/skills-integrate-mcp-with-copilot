@@ -11,16 +11,30 @@
       <h1>Mergington High School</h1>
       <h2>Extracurricular Activities</h2>
     </header>
-
     <main>
       <section id="activities-container">
         <h3>Available Activities</h3>
+        <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
+          <select id="category-filter">
+            <option value="">All Categories</option>
+            <option value="Technology">Technology</option>
+            <option value="Games">Games</option>
+            <option value="Sports">Sports</option>
+            <option value="Arts">Arts</option>
+            <option value="Academics">Academics</option>
+          </select>
+          <select id="sort-filter">
+            <option value="">Sort By</option>
+            <option value="name">Name</option>
+            <option value="time">Time</option>
+          </select>
+          <input type="text" id="search-box" placeholder="Search activities..." />
+        </div>
         <div id="activities-list">
           <!-- Activities will be loaded here -->
           <p>Loading activities...</p>
         </div>
       </section>
-
       <section id="signup-container">
         <h3>Sign Up for an Activity</h3>
         <form id="signup-form">
@@ -39,12 +53,19 @@
         </form>
         <div id="message" class="hidden"></div>
       </section>
+      <section id="admin-login-container">
+        <button id="admin-login-btn" type="button">Admin Login</button>
+        <div id="admin-login-form" class="hidden">
+          <input type="text" id="admin-username" placeholder="Username" />
+          <input type="password" id="admin-password" placeholder="Password" />
+          <button id="admin-submit-btn" type="button">Login</button>
+          <div id="admin-message"></div>
+        </div>
+      </section>
     </main>
-
     <footer>
       <p>&copy; 2023 Mergington High School</p>
     </footer>
-
     <script src="app.js"></script>
   </body>
 </html>
