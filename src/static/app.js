@@ -4,24 +4,49 @@ document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
 
-  // Function to fetch activities from API
+  // State for filters
+  let currentCategory = "";
+  let currentSort = "";
+  let currentSearch = "";
+
+  // Filter, sort, and search controls
+  const categoryFilter = document.getElementById("category-filter");
+  const sortFilter = document.getElementById("sort-filter");
+  const searchBox = document.getElementById("search-box");
+
+  categoryFilter.addEventListener("change", () => {
+    currentCategory = categoryFilter.value;
+    fetchActivities();
+  });
+  sortFilter.addEventListener("change", () => {
+    currentSort = sortFilter.value;
+    fetchActivities();
+  });
+  searchBox.addEventListener("input", () => {
+    currentSearch = searchBox.value;
+    fetchActivities();
+  });
+
+  // Function to fetch activities from API with filters
   async function fetchActivities() {
     try {
-      const response = await fetch("/activities");
+      let url = "/activities?";
+      if (currentCategory) url += `category=${encodeURIComponent(currentCategory)}&`;
+      if (currentSort) url += `sort=${encodeURIComponent(currentSort)}&`;
+      if (currentSearch) url += `search=${encodeURIComponent(currentSearch)}&`;
+      const response = await fetch(url);
       const activities = await response.json();
 
-      // Clear loading message
+      // Clear loading message and dropdown
       activitiesList.innerHTML = "";
+      activitySelect.innerHTML = '<option value="">-- Select an activity --</option>';
 
       // Populate activities list
-      Object.entries(activities).forEach(([name, details]) => {
+      activities.forEach((details) => {
+        const name = details.name;
         const activityCard = document.createElement("div");
         activityCard.className = "activity-card";
-
-        const spotsLeft =
-          details.max_participants - details.participants.length;
-
-        // Create participants HTML with delete icons instead of bullet points
+        const spotsLeft = details.max_participants - details.participants.length;
         const participantsHTML =
           details.participants.length > 0
             ? `<div class="participants-section">
@@ -36,26 +61,23 @@ document.addEventListener("DOMContentLoaded", () => {
               </ul>
             </div>`
             : `<p><em>No participants yet</em></p>`;
-
         activityCard.innerHTML = `
           <h4>${name}</h4>
           <p>${details.description}</p>
           <p><strong>Schedule:</strong> ${details.schedule}</p>
+          <p><strong>Category:</strong> ${details.category || ""}</p>
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
           <div class="participants-container">
             ${participantsHTML}
           </div>
         `;
-
         activitiesList.appendChild(activityCard);
-
         // Add option to select dropdown
         const option = document.createElement("option");
         option.value = name;
         option.textContent = name;
         activitySelect.appendChild(option);
       });
-
       // Add event listeners to delete buttons
       document.querySelectorAll(".delete-btn").forEach((button) => {
         button.addEventListener("click", handleUnregister);
@@ -152,6 +174,38 @@ document.addEventListener("DOMContentLoaded", () => {
       messageDiv.className = "error";
       messageDiv.classList.remove("hidden");
       console.error("Error signing up:", error);
+    }
+  });
+
+  // Admin login logic
+  const adminLoginBtn = document.getElementById("admin-login-btn");
+  const adminLoginForm = document.getElementById("admin-login-form");
+  const adminSubmitBtn = document.getElementById("admin-submit-btn");
+  const adminMessage = document.getElementById("admin-message");
+
+  adminLoginBtn.addEventListener("click", () => {
+    adminLoginForm.classList.toggle("hidden");
+  });
+  adminSubmitBtn.addEventListener("click", async () => {
+    const username = document.getElementById("admin-username").value;
+    const password = document.getElementById("admin-password").value;
+    try {
+      const response = await fetch("/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      });
+      const result = await response.json();
+      if (response.ok) {
+        adminMessage.textContent = result.message;
+        adminMessage.className = "success";
+      } else {
+        adminMessage.textContent = result.detail || "Login failed";
+        adminMessage.className = "error";
+      }
+    } catch (error) {
+      adminMessage.textContent = "Login error";
+      adminMessage.className = "error";
     }
   });
 
